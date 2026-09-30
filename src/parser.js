@@ -93,7 +93,22 @@ class ParserInstance {
       case 'PREAUTH':
       case 'BYE':
         if (this.remainder[1] === ASCII_LEFT_BRACKET) {
-          let rightBracket = this.remainder.indexOf(ASCII_RIGHT_BRACKET)
+          let rightBracket = -1
+          let nesting = 0
+          for (let i = 2; i < this.remainder.length; i++) {
+            if (this.remainder[i] === ASCII_RIGHT_BRACKET && nesting === 0) {
+              rightBracket = i
+              break
+            } else if (this.remainder[i] === ASCII_LEFT_BRACKET) {
+              nesting += 1
+            } else if (this.remainder[i] === ASCII_RIGHT_BRACKET) {
+              nesting -= 1
+            }
+          }
+          if (rightBracket === -1) {
+            // unbalanced as seen in test 'should succeed 9'
+            rightBracket = this.remainder.indexOf(ASCII_RIGHT_BRACKET)
+          }
           if (rightBracket > 1) {
             this.humanReadable = fromCharCodeTrimmed(this.remainder.subarray(rightBracket + 1))
             this.remainder = this.remainder.subarray(0, rightBracket + 1)

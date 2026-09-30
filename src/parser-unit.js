@@ -768,6 +768,86 @@ describe('IMAP Command Parser', function () {
       })
     })
 
+    it('should succeed 13', function () {
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $Junk $Label1 $NotJunk $NotPhishing $Phishing Junk NonJunk [GMail]/PayPal \\*)] Flags permitted.'))).to.deep.equal({
+        tag: '*',
+        command: 'OK',
+        attributes: [{
+          section: [{
+            type: 'ATOM',
+            value: 'PERMANENTFLAGS'
+          },
+          [
+            {
+              type: 'ATOM',
+              value: '\\Answered'
+            },
+            {
+              type: 'ATOM',
+              value: '\\Flagged'
+            },
+            {
+              type: 'ATOM',
+              value: '\\Draft'
+            },
+            {
+              type: 'ATOM',
+              value: '\\Deleted'
+            },
+            {
+              type: 'ATOM',
+              value: '\\Seen'
+            },
+            {
+              type: 'ATOM',
+              value: '$Forwarded'
+            },
+            {
+              type: 'ATOM',
+              value: '$Junk'
+            },
+            {
+              type: 'ATOM',
+              value: '$Label1'
+            },
+            {
+              type: 'ATOM',
+              value: '$NotJunk'
+            },
+            {
+              type: 'ATOM',
+              value: '$NotPhishing'
+            },
+            {
+              type: 'ATOM',
+              value: '$Phishing'
+            },
+            {
+              type: 'ATOM',
+              value: 'Junk'
+            },
+            {
+              type: 'ATOM',
+              value: 'NonJunk'
+            },
+            {
+              type: 'ATOM',
+              value: '[GMail]/PayPal'
+            },
+            {
+              type: 'ATOM',
+              value: '\\*'
+            }
+          ]],
+          type: 'ATOM',
+          value: ''
+        },
+        {
+          type: 'TEXT',
+          value: 'Flags permitted.'
+        }] })
+    })
+
     it('should fail', function () {
       expect(function () {
         parser(str2arr('TAG1 NO [UNAVAI'))
