@@ -857,10 +857,13 @@ describe('IMAP Command Parser', function () {
         }] })
     })
 
-    // This test is a combination of 'should succeed 9' and 'should succeed 13'
-    // to further test brackets within flags
     it('should succeed 14', function () {
-      expect(parser(str2arr('* OK [PERMANENTFLAGS (de:hacking $label kt-evalution [css3-page [GMail]/PayPal \\*)] Flags permitted.'))).to.deep.equal({
+      // Supported
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\*)] Basic')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS ()] Text ending in []')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS ([flag)] Flag starts with [')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (fl]ag)] Flag includes ]')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (fl]ag)] Flag includes ]'))).to.deep.equal({
         tag: '*',
         command: 'OK',
         attributes: [{
@@ -870,31 +873,23 @@ describe('IMAP Command Parser', function () {
             type: 'ATOM',
             value: 'PERMANENTFLAGS'
           },
-          [{
-            type: 'ATOM',
-            value: 'de:hacking'
-          }, {
-            type: 'ATOM',
-            value: '$label'
-          }, {
-            type: 'ATOM',
-            value: 'kt-evalution'
-          }, {
-            type: 'ATOM',
-            value: '[css3-page'
-          }, {
-            type: 'ATOM',
-            value: '[GMail]/PayPal'
-          }, {
-            type: 'ATOM',
-            value: '\\*'
-          }]
-          ]
+          [
+            {
+              type: 'ATOM',
+              value: 'fl]ag'
+            }
+          ]]
         }, {
           type: 'TEXT',
-          value: 'Flags permitted.'
+          value: 'Flag includes ]'
         }]
       })
+
+      // Not supported
+      expect(function () {
+        // Note the space following the first ] indicating end of flags array
+        parser(str2arr('* OK [PERMANENTFLAGS (flag] \\*)] Flag ends with ] '))
+      }).to.throw(Error)
     })
 
     it('should fail', function () {
