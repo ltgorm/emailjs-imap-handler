@@ -768,8 +768,17 @@ describe('IMAP Command Parser', function () {
       })
     })
 
+    // Gmail does not adhere to the formal syntax of an imap response.
+    // See RFC9501.
+    // [GMail]/PayPal is in PERMANENTFLAGS as if it were a flag keyword. The
+    // syntax does not allow "]" inside a flag. So this is a Gmail bug.
+    // This fix makes it so that we can handle those replies from Gmail.
+    // Note that we add some brackets to the text field at the end to make
+    // sure that those are not erroneously used when matching the opening
+    // bracket of PERMANENTFLAGS.
+    // In real life the text at the end would say "Flags permitted."
     it('should succeed 13', function () {
-      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $Junk $Label1 $NotJunk $NotPhishing $Phishing Junk NonJunk [GMail]/PayPal \\*)] Flags permitted.'))).to.deep.equal({
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $Junk $Label1 $NotJunk $NotPhishing $Phishing Junk NonJunk [GMail]/PayPal \\*)] Flags [...] permitted.[]'))).to.deep.equal({
         tag: '*',
         command: 'OK',
         attributes: [{
@@ -844,8 +853,48 @@ describe('IMAP Command Parser', function () {
         },
         {
           type: 'TEXT',
-          value: 'Flags permitted.'
+          value: 'Flags [...] permitted.[]'
         }] })
+    })
+
+    // This test is a combination of 'should succeed 9' and 'should succeed 13'
+    // to further test brackets within flags
+    it('should succeed 14', function () {
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (de:hacking $label kt-evalution [css3-page [GMail]/PayPal \\*)] Flags permitted.'))).to.deep.equal({
+        tag: '*',
+        command: 'OK',
+        attributes: [{
+          type: 'ATOM',
+          value: '',
+          section: [{
+            type: 'ATOM',
+            value: 'PERMANENTFLAGS'
+          },
+          [{
+            type: 'ATOM',
+            value: 'de:hacking'
+          }, {
+            type: 'ATOM',
+            value: '$label'
+          }, {
+            type: 'ATOM',
+            value: 'kt-evalution'
+          }, {
+            type: 'ATOM',
+            value: '[css3-page'
+          }, {
+            type: 'ATOM',
+            value: '[GMail]/PayPal'
+          }, {
+            type: 'ATOM',
+            value: '\\*'
+          }]
+          ]
+        }, {
+          type: 'TEXT',
+          value: 'Flags permitted.'
+        }]
+      })
     })
 
     it('should fail', function () {

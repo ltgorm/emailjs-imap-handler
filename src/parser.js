@@ -93,12 +93,14 @@ class ParserInstance {
       case 'PREAUTH':
       case 'BYE':
         if (this.remainder[1] === ASCII_LEFT_BRACKET) {
-          let rightBracket = -1
-          for (let i = 2; i < this.remainder.length; i++) {
-            if (this.remainder[i] === ASCII_RIGHT_BRACKET &&
-               (i === this.remainder.length - 1 || this.remainder[i + 1] === ASCII_SPACE)) {
-              rightBracket = i
-              break
+          let rightBracket = this.remainder.indexOf(ASCII_RIGHT_BRACKET)
+          if (rightBracket > -1) {
+            for (let i = rightBracket; i < this.remainder.length; i++) {
+              if (this.remainder[i] === ASCII_RIGHT_BRACKET &&
+                 (i === this.remainder.length - 1 || this.remainder[i + 1] === ASCII_SPACE)) {
+                rightBracket = i
+                break
+              }
             }
           }
           if (rightBracket > 1) {
