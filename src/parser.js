@@ -68,9 +68,6 @@ function isEmpty (uint8Array) {
 }
 
 function findRightBracket (uint8Array, fromIndex) {
-  if (fromIndex + 1 === uint8Array.length) {
-    return -1
-  }
   let index = uint8Array.indexOf(ASCII_RIGHT_BRACKET, fromIndex)
   if (index === -1) {
     return -1

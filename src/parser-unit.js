@@ -863,6 +863,28 @@ describe('IMAP Command Parser', function () {
       expect(parser(str2arr('* OK [PERMANENTFLAGS ()] Text ending in []')).command).to.equal('OK')
       expect(parser(str2arr('* OK [PERMANENTFLAGS ([flag)] Flag starts with [')).command).to.equal('OK')
       expect(parser(str2arr('* OK [PERMANENTFLAGS (fl]ag)] Flag includes ]')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (flag)] No ] in flags but is here')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (fl[ag)] Make sure opening bracket in flag does not match this: ['))).to.deep.equal({
+        tag: '*',
+        command: 'OK',
+        attributes: [{
+          type: 'ATOM',
+          value: '',
+          section: [{
+            type: 'ATOM',
+            value: 'PERMANENTFLAGS'
+          },
+          [
+            {
+              type: 'ATOM',
+              value: 'fl[ag'
+            }
+          ]]
+        }, {
+          type: 'TEXT',
+          value: 'Make sure opening bracket in flag does not match this: ['
+        }]
+      })
       expect(parser(str2arr('* OK [PERMANENTFLAGS (fl]ag)] Flag includes ]'))).to.deep.equal({
         tag: '*',
         command: 'OK',
