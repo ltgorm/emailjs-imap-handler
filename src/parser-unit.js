@@ -770,8 +770,9 @@ describe('IMAP Command Parser', function () {
 
     // Gmail does not adhere to the formal syntax of an imap response.
     // See RFC9501.
-    // [GMail]/PayPal is in PERMANENTFLAGS as if it were a flag keyword. The
-    // syntax does not allow "]" inside a flag. So this is a Gmail bug.
+    // [GMail]/PayPal is an example of a 'flag' that can appear in
+    // PERMANENTFLAGS from Gmail respone.
+    // The syntax does not allow "]" inside a flag. So this is a Gmail bug.
     // This fix makes it so that we can handle those replies from Gmail.
     // Note that we add some brackets to the text field at the end to make
     // sure that those are not erroneously used when matching the opening
@@ -857,14 +858,17 @@ describe('IMAP Command Parser', function () {
         }] })
     })
 
+    // More variations of brackets in flags and text to cover the logic of the
+    // findRightBracket function
     it('should succeed 14', function () {
       // Supported
-      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\*)] Basic')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\*)]')).command).to.equal('OK')
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (\\*)] Text')).command).to.equal('OK')
       expect(parser(str2arr('* OK [PERMANENTFLAGS ()] Text ending in []')).command).to.equal('OK')
       expect(parser(str2arr('* OK [PERMANENTFLAGS ([flag)] Flag starts with [')).command).to.equal('OK')
       expect(parser(str2arr('* OK [PERMANENTFLAGS (fl]ag)] Flag includes ]')).command).to.equal('OK')
       expect(parser(str2arr('* OK [PERMANENTFLAGS (flag)] No ] in flags but is here')).command).to.equal('OK')
-      expect(parser(str2arr('* OK [PERMANENTFLAGS (fl[ag)] Make sure opening bracket in flag does not match this: ['))).to.deep.equal({
+      expect(parser(str2arr('* OK [PERMANENTFLAGS (fl[ag)] Flag includes ['))).to.deep.equal({
         tag: '*',
         command: 'OK',
         attributes: [{
@@ -882,7 +886,7 @@ describe('IMAP Command Parser', function () {
           ]]
         }, {
           type: 'TEXT',
-          value: 'Make sure opening bracket in flag does not match this: ['
+          value: 'Flag includes ['
         }]
       })
       expect(parser(str2arr('* OK [PERMANENTFLAGS (fl]ag)] Flag includes ]'))).to.deep.equal({
