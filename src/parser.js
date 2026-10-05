@@ -67,15 +67,17 @@ function isEmpty (uint8Array) {
   return true
 }
 
-function findRightBracket (uint8Array, fromIndex) {
-  let index = uint8Array.indexOf(ASCII_RIGHT_BRACKET, fromIndex)
-  if (index === -1) {
-    return -1
+function findRightBracket (uint8Array, index) {
+  while (true) {
+    index = uint8Array.indexOf(ASCII_RIGHT_BRACKET, index)
+    if (index === -1) {
+      return -1
+    }
+    if (index + 1 === uint8Array.length || uint8Array[index + 1] === ASCII_SPACE) {
+      return index
+    }
+    index++
   }
-  if (index + 1 === uint8Array.length || uint8Array[index + 1] === ASCII_SPACE) {
-    return index
-  }
-  return findRightBracket(uint8Array, index + 1)
 }
 
 class ParserInstance {
